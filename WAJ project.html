@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wave Simulator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap');
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif !important;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(245, 202, 92, 0.08) 0%, transparent 35%),
+        radial-gradient(circle at 85% 15%, rgba(69, 207, 196, 0.08) 0%, transparent 35%),
+        linear-gradient(180deg, #374a72 0%, #2d3e61 55%, #283758 100%) !important;
+      color: #e4eaf7;
+      min-height: 100vh;
+      margin: 0;
+      padding: 28px 24px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* App Description Header */
+    .app-header {
+      width: 100%;
+      max-width: 860px;
+      text-align: center;
+      margin-bottom: 18px;
+      background: rgba(35, 48, 77, 0.55);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 16px 24px;
+      box-shadow: 0 6px 0 #23304d, 0 10px 20px rgba(18, 26, 44, 0.25);
+    }
+
+    .app-description {
+      margin: 0 0 10px 0;
+      font-size: 16.5px;
+      font-weight: 800;
+      color: #f5ca5c;
+      line-height: 1.45;
+      letter-spacing: 0.2px;
+    }
+
+    .team-pitch {
+      margin: 0;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #e4eaf7;
+      line-height: 1.55;
+    }
+
+    .team-pitch strong {
+      font-family: 'Nunito', sans-serif;
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #7ee8df;
+      letter-spacing: 0;
+    }
+
+    /* Control Pill Cards */
+    .control-card {
+      width: 100%;
+      max-width: 860px;
+      background: #465b86;
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 13px 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 6px 0 #23304d, 0 10px 20px rgba(18, 26, 44, 0.25);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px 18px;
+    }
+
+    .control-group {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    label {
+      font-weight: 700;
+      font-size: 14px;
+      color: #e4eaf7;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    strong {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: #f5ca5c;
+      letter-spacing: 0.3px;
+    }
+
+    .sci-notation-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(35, 48, 77, 0.45);
+      padding: 4px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .sci-symbol {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #cfe0ff;
+      user-select: none;
+    }
+
+    .sci-unit {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #f5ca5c;
+      margin-left: 2px;
+      user-select: none;
+    }
+
+    /* Range Sliders */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 8px;
+      background: #283758;
+      border-radius: 999px;
+      outline: none;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    #freqSlider {
+      width: 150px;
+    }
+
+    #ampSlider {
+      width: 115px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #ffe17d 0%, #f5ca5c 100%);
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 0 #b88228, 0 3px 6px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #ffe17d 0%, #f5ca5c 100%);
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 0 #b88228, 0 3px 6px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+    }
+
+    /* Number Inputs */
+    input[type="number"] {
+      background: #283758;
+      color: #f5ca5c;
+      border: 1.5px solid #5c73a3;
+      border-radius: 11px;
+      padding: 4px 6px;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="number"]:focus {
+      border-color: #f5ca5c;
+      box-shadow: 0 0 0 3px rgba(245, 202, 92, 0.22);
+    }
+
+    /* Radio Buttons, Checkboxes & Color Swatch */
+    input[type="radio"],
+    input[type="checkbox"] {
+      accent-color: #f5ca5c;
+      width: 17px;
+      height: 17px;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    input[type="color"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 32px;
+      height: 28px;
+      border: 2px solid #ffffff;
+      border-radius: 10px;
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+    }
+
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch {
+      border: none;
+      border-radius: 8px;
+    }
+
+    /* Tactile 3D Gold Button */
+    #resetBtn {
+      background: linear-gradient(180deg, #d79756 0%, #c17e3f 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #915823, 0 6px 14px rgba(18, 25, 42, 0.35);
+      transition: transform 0.12s ease, filter 0.2s ease, box-shadow 0.12s ease;
+      touch-action: manipulation;
+      margin-left: auto;
+    }
+
+    #resetBtn:hover {
+      filter: brightness(1.06);
+    }
+
+    #resetBtn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #915823, 0 3px 6px rgba(18, 25, 42, 0.3);
+    }
+
+    /* Responsive Canvas & Readout Container */
+    .stage-container {
+      width: 100%;
+      max-width: 860px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 16px;
+    }
+
+    #waveCanvas {
+      flex: 1 1 540px;
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      aspect-ratio: 2 / 1;
+      display: block;
+      background: linear-gradient(180deg, #f2f6fc 0%, #dfe7f5 100%);
+      border: 3px solid #51658f;
+      border-radius: 24px;
+      box-shadow: 0 8px 0 #23304d, 0 16px 30px rgba(18, 26, 44, 0.35);
+    }
+
+    #infoBox {
+      flex: 1 1 225px;
+      background: #283758;
+      border: 3px solid #16a34a;
+      border-radius: 24px;
+      padding: 16px 20px;
+      min-width: 0;
+      box-shadow: 0 8px 0 #1d2842, 0 16px 30px rgba(18, 26, 44, 0.35);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .readout-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .readout-label {
+      color: #9fb0d1;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 2px;
+    }
+
+    .readout-primary {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: #f5ca5c;
+      line-height: 1.2;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.22);
+    }
+
+    .readout-secondary {
+      font-family: 'Nunito', sans-serif;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #c5d3ee;
+      margin-top: 1px;
+    }
+
+    #typeDisplay {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 21px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    /* Wave Safety & Uses Guide Card */
+    .wave-guide-card {
+      width: 100%;
+      max-width: 860px;
+      margin-top: 16px;
+      background: #283758;
+      border: 3px solid #16a34a;
+      border-radius: 24px;
+      padding: 18px 22px;
+      box-shadow: 0 8px 0 #1d2842, 0 16px 30px rgba(18, 26, 44, 0.35);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .guide-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .guide-title {
+      margin: 0;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #f5ca5c;
+      letter-spacing: 0.3px;
+    }
+
+    .danger-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .badge-safe {
+      background: rgba(22, 163, 74, 0.22);
+      color: #86efac;
+      border: 1.5px solid #22c55e;
+    }
+
+    .badge-caution {
+      background: rgba(234, 179, 8, 0.22);
+      color: #fde047;
+      border: 1.5px solid #eab308;
+    }
+
+    .badge-danger {
+      background: rgba(220, 38, 38, 0.25);
+      color: #fca5a5;
+      border: 1.5px solid #ef4444;
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .guide-box {
+      background: rgba(70, 91, 134, 0.42);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 12px 15px;
+    }
+
+    .guide-box-title {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 13.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #7ee8df;
+      margin-bottom: 4px;
+    }
+
+    .guide-box-text {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #e4eaf7;
+      line-height: 1.45;
+    }
+
+    /* Tablet & Mobile Breakpoints */
+    @media (max-width: 880px) {
+      #waveCanvas {
+        max-width: 100%;
+      }
+
+      #infoBox {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px 18px;
+        padding: 16px 20px;
+      }
+
+      #resetBtn {
+        margin-left: 0;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 16px 14px 28px;
+      }
+
+      .app-header {
+        padding: 13px 16px;
+        border-radius: 18px;
+        margin-bottom: 14px;
+      }
+
+      .app-description {
+        font-size: 15px;
+      }
+
+      .team-pitch,
+      .team-pitch strong {
+        font-size: 13.5px;
+      }
+
+      .control-card {
+        padding: 14px;
+        border-radius: 18px;
+        gap: 12px;
+      }
+
+      .control-group {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      #freqSlider,
+      #ampSlider {
+        flex: 1;
+        min-width: 110px;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        width: 22px;
+        height: 22px;
+      }
+
+      input[type="range"]::-moz-range-thumb {
+        width: 22px;
+        height: 22px;
+      }
+
+      #resetBtn {
+        width: 100%;
+        padding: 11px 18px;
+        margin-top: 2px;
+      }
+
+      #waveCanvas {
+        border-radius: 18px;
+      }
+
+      #infoBox {
+        border-radius: 18px;
+        padding: 14px 16px;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .readout-primary {
+        font-size: 17px;
+      }
+
+      #typeDisplay {
+        font-size: 18px;
+      }
+
+      .wave-guide-card {
+        border-radius: 18px;
+        padding: 14px 16px;
+      }
+
+      .guide-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 0. APP DESCRIPTION & TEAM PITCH -->
+  <header class="app-header">
+    <p class="app-description">This app helps people understand electromagnetic waves even if they do not have prior science experience.</p>
+    <p class="team-pitch">
+      Created by our dedicated team—<strong>Ward</strong>, <strong>Ahmad</strong>, and <strong>Jad</strong>—we combined physics accuracy, interactive design, and clear visual feedback to turn complex formulas into an intuitive learning tool. We deserve to win because our simulator bridges the gap between beginner curiosity and real-world scientific data, making invisible wave behavior easy, engaging, and accessible to everyone.
+    </p>
+  </header>
+
+  <!-- 1. FREQUENCY (Hz) & AMPLITUDE (A) CONTROLS -->
+  <div class="control-card">
+    <div class="control-group">
+      <label for="freqSlider">
+        <strong>Frequency (f):</strong>
+        <input type="range" id="freqSlider" min="4" max="21" step="0.05" value="14.74" aria-label="Logarithmic Frequency Slider">
+      </label>
+      <div class="sci-notation-group">
+        <input type="number" id="freqCoeff" min="1.00" max="9.99" step="0.01" value="5.50" style="width: 64px;" aria-label="Frequency Coefficient">
+        <span class="sci-symbol">&times; 10<sup style="font-size: 11px;">^</sup></span>
+        <input type="number" id="freqExp" min="4" max="21" step="1" value="14" style="width: 52px;" aria-label="Frequency Exponent">
+        <span class="sci-unit">Hz</span>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label for="ampSlider">
+        <strong>Amplitude (A):</strong>
+        <input type="range" id="ampSlider" min="10" max="150" step="1" value="50" aria-label="Amplitude Slider">
+      </label>
+      <input type="number" id="ampNum" min="10" max="150" step="1" value="50" style="width: 62px;" aria-label="Amplitude Value">
+    </div>
+  </div>
+
+  <!-- 2. SCIENTIFIC PRESETS (Radio Buttons) -->
+  <div class="control-card">
+    <strong>Presets:</strong>
+    <label><input type="radio" name="preset" value="radio"> Radio Wave</label>
+    <label><input type="radio" name="preset" value="microwave"> Microwave</label>
+    <label><input type="radio" name="preset" value="light" checked> Visible Light</label>
+    <label><input type="radio" name="preset" value="xray"> X-Ray</label>
+    <label><input type="radio" name="preset" value="gamma"> Gamma Ray</label>
+  </div>
+
+  <!-- 3. SIMULATION CONTROLS, COLOR PICKER & RESET -->
+  <div class="control-card">
+    <label><input type="checkbox" id="pauseWave"> Pause Wave</label>
+
+    <label>
+      <input type="checkbox" id="useCustomColor"> Custom Color:
+      <input type="color" id="customColor" value="#16a34a" aria-label="Custom Wave Color">
+    </label>
+
+    <input type="button" id="resetBtn" value="Reset to Default">
+  </div>
+
+  <!-- 4. CANVAS AND SCIENTIFIC READOUT BOX -->
+  <div class="stage-container">
+    <canvas id="waveCanvas" width="600" height="300"></canvas>
+
+    <div id="infoBox">
+      <div class="readout-item">
+        <div class="readout-label">Wave Type</div>
+        <div id="typeDisplay" style="color: #16a34a;">Visible Light</div>
+      </div>
+
+      <div class="readout-item">
+        <div class="readout-label">Frequency (f)</div>
+        <div id="freqDisplay" class="readout-primary">550 THz</div>
+        <div id="freqSciDisplay" class="readout-secondary">5.50 &times; 10<sup>14</sup> Hz</div>
+      </div>
+
+      <div class="readout-item">
+        <div class="readout-label">Wavelength (&lambda; = c / f)</div>
+        <div id="lambdaDisplay" class="readout-primary">545 nm</div>
+        <div id="lambdaSciDisplay" class="readout-secondary">5.45 &times; 10<sup>-7</sup> m</div>
+      </div>
+
+      <div class="readout-item">
+        <div class="readout-label">Photon Energy (E = hf)</div>
+        <div id="energyDisplay" class="readout-primary">2.27 eV</div>
+        <div id="energySciDisplay" class="readout-secondary">2.27 &times; 10<sup>0</sup> eV</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. REAL-WORLD USES & SAFETY DESCRIPTION -->
+  <section id="waveGuideCard" class="wave-guide-card" aria-live="polite">
+    <div class="guide-header">
+      <h2 id="guideTitle" class="guide-title">About Visible Light</h2>
+      <span id="dangerBadge" class="danger-badge badge-safe">Generally Safe</span>
+    </div>
+    <div class="guide-grid">
+      <div class="guide-box">
+        <div class="guide-box-title">Is It Dangerous?</div>
+        <p id="dangerText" class="guide-box-text">
+          No, normal visible light is safe for humans. Only extremely bright concentrated beams (such as high-powered lasers or staring directly at the sun) can harm your eyes.
+        </p>
+      </div>
+      <div class="guide-box">
+        <div class="guide-box-title">Where Is It Used?</div>
+        <p id="usesText" class="guide-box-text">
+          Used for human vision, home and street lighting, photography, phone and TV screens, fiber-optic internet cables, and solar panels.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // =========================================================================
+    // 1. EXACT CODATA PHYSICAL CONSTANTS
+    // =========================================================================
+    const SPEED_OF_LIGHT = 2.99792458e8;      // c in m/s
+    const PLANCK_CONSTANT = 6.62607015e-34;   // h in J·s
+    const ELEMENTARY_CHARGE = 1.602176634e-19;// e in J/eV (exact conversion)
+
+    const MIN_EXP = 4;
+    const MAX_EXP = 21;
+    const MIN_FREQ = 1e4;   // 1.00 × 10^4 Hz
+    const MAX_FREQ = 1e21;  // 1.00 × 10^21 Hz
+
+    // =========================================================================
+    // 2. DOM ELEMENT REFERENCES
+    // =========================================================================
+    const canvas = document.getElementById('waveCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const freqSlider = document.getElementById('freqSlider');
+    const freqCoeffInput = document.getElementById('freqCoeff');
+    const freqExpInput = document.getElementById('freqExp');
+
+    const ampSlider = document.getElementById('ampSlider');
+    const ampNum = document.getElementById('ampNum');
+
+    const pauseWave = document.getElementById('pauseWave');
+    const useCustomColor = document.getElementById('useCustomColor');
+    const customColor = document.getElementById('customColor');
+    const presetRadios = document.querySelectorAll('input[name="preset"]');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const infoBox = document.getElementById('infoBox');
+    const typeDisplay = document.getElementById('typeDisplay');
+    const freqDisplay = document.getElementById('freqDisplay');
+    const freqSciDisplay = document.getElementById('freqSciDisplay');
+    const lambdaDisplay = document.getElementById('lambdaDisplay');
+    const lambdaSciDisplay = document.getElementById('lambdaSciDisplay');
+    const energyDisplay = document.getElementById('energyDisplay');
+    const energySciDisplay = document.getElementById('energySciDisplay');
+
+    const waveGuideCard = document.getElementById('waveGuideCard');
+    const guideTitle = document.getElementById('guideTitle');
+    const dangerBadge = document.getElementById('dangerBadge');
+    const dangerText = document.getElementById('dangerText');
+    const usesText = document.getElementById('usesText');
+
+    // =========================================================================
+    // 3. SIMULATION STATE
+    // =========================================================================
+    let currentFreq = 5.50e14; // Default: 5.50 × 10^14 Hz (Visible Green Light)
+    let phase = 0;
+    let lastTimestamp = null;
+
+    // Preset scientific definitions
+    const PRESETS = {
+      radio:     { coeff: 1.00, exp: 8,  amp: 110 }, // 100 MHz
+      microwave: { coeff: 2.45, exp: 9,  amp: 85  }, // 2.45 GHz
+      light:     { coeff: 5.50, exp: 14, amp: 50  }, // 550 THz
+      xray:      { coeff: 1.00, exp: 18, amp: 30  }, // 1.00 EHz
+      gamma:     { coeff: 1.00, exp: 20, amp: 20  }  // 100 EHz
+    };
+
+    // =========================================================================
+    // 4. SCIENTIFIC NOTATION & SI UNIT FORMATTING HELPERS
+    // =========================================================================
+
+    /**
+     * Decomposes any positive number into normalized scientific notation:
+     * value = coeff * 10^exp, where 1.00 <= coeff < 10.00
+     */
+    function toSciParts(value) {
+      if (!Number.isFinite(value) || value <= 0) {
+        return { coeff: 1.00, exp: 4 };
+      }
+      let exp = Math.floor(Math.log10(value));
+      let coeff = value / Math.pow(10, exp);
+
+      // Handle rounding edge case (e.g. 9.999 -> 10.00 -> 1.00 × 10^(exp+1))
+      if (Number(coeff.toFixed(2)) >= 10) {
+        coeff = 1.00;
+        exp += 1;
+      }
+      return {
+        coeff: Number(coeff.toFixed(2)),
+        exp: exp
+      };
+    }
+
+    /**
+     * Formats a positive number into clean HTML scientific notation (e.g., 5.50 × 10^14 unit)
+     */
+    function formatSciHTML(value, unit) {
+      const { coeff, exp } = toSciParts(value);
+      return `${coeff.toFixed(2)} &times; 10<sup>${exp}</sup> ${unit}`;
+    }
+
+    /**
+     * Formats frequency (Hz) with the most readable SI metric prefix
+     */
+    function formatFrequencySI(freqHz) {
+      const prefixes = [
+        { limit: 1e21, div: 1e21, unit: 'ZHz' },
+        { limit: 1e18, div: 1e18, unit: 'EHz' },
+        { limit: 1e15, div: 1e15, unit: 'PHz' },
+        { limit: 1e12, div: 1e12, unit: 'THz' },
+        { limit: 1e9,  div: 1e9,  unit: 'GHz' },
+        { limit: 1e6,  div: 1e6,  unit: 'MHz' },
+        { limit: 1e3,  div: 1e3,  unit: 'kHz' },
+        { limit: 0,    div: 1,    unit: 'Hz'  }
+      ];
+
+      for (const p of prefixes) {
+        if (freqHz >= p.limit) {
+          const scaled = freqHz / p.div;
+          return `${scaled.toPrecision(3)} ${p.unit}`;
+        }
+      }
+      return `${freqHz.toPrecision(3)} Hz`;
+    }
+
+    /**
+     * Formats wavelength (meters) with the most readable SI length prefix
+     */
+    function formatWavelengthSI(meters) {
+      const units = [
+        { limit: 1e3,   div: 1e3,   unit: 'km' },
+        { limit: 1,     div: 1,     unit: 'm'  },
+        { limit: 1e-2,  div: 1e-2,  unit: 'cm' },
+        { limit: 1e-3,  div: 1e-3,  unit: 'mm' },
+        { limit: 1e-6,  div: 1e-6,  unit: 'µm' },
+        { limit: 1e-9,  div: 1e-9,  unit: 'nm' },
+        { limit: 1e-12, div: 1e-12, unit: 'pm' },
+        { limit: 0,     div: 1e-15, unit: 'fm' }
+      ];
+
+      for (const u of units) {
+        if (meters >= u.limit) {
+          const scaled = meters / u.div;
+          return `${scaled.toPrecision(3)} ${u.unit}`;
+        }
+      }
+      return `${(meters / 1e-15).toPrecision(3)} fm`;
+    }
+
+    /**
+     * Formats photon energy (eV) with appropriate SI prefix
+     */
+    function formatEnergyEV(energyEV) {
+      const units = [
+        { limit: 1e6,  div: 1e6,  unit: 'MeV' },
+        { limit: 1e3,  div: 1e3,  unit: 'keV' },
+        { limit: 1,    div: 1,    unit: 'eV'  },
+        { limit: 1e-3, div: 1e-3, unit: 'meV' },
+        { limit: 1e-6, div: 1e-6, unit: 'µeV' },
+        { limit: 1e-9, div: 1e-9, unit: 'neV' },
+        { limit: 0,    div: 1e-12, unit: 'peV' }
+      ];
+
+      for (const u of units) {
+        if (energyEV >= u.limit) {
+          const scaled = energyEV / u.div;
+          return `${scaled.toPrecision(3)} ${u.unit}`;
+        }
+      }
+      return `${(energyEV / 1e-12).toPrecision(3)} peV`;
+    }
+
+    // =========================================================================
+    // 5. ELECTROMAGNETIC SPECTRUM CLASSIFICATION & VISIBLE COLOR MAPPING
+    // =========================================================================
+
+    /**
+     * Smoothly maps visible frequencies (4.00e14 Hz to 7.50e14 Hz)
+     * from Red (#dc2626) -> Orange -> Yellow -> Green (#16a34a at 550 THz) -> Cyan -> Blue -> Violet (#7c3aed)
+     */
+    function getVisibleSpectrumHex(freqHz) {
+      const stops = [
+        { f: 4.00e14, rgb: [220, 38, 38]  }, // Red (#dc2626)
+        { f: 4.80e14, rgb: [234, 88, 12]  }, // Orange
+        { f: 5.15e14, rgb: [202, 138, 4]  }, // Yellow-Amber
+        { f: 5.50e14, rgb: [22, 163, 74]  }, // Green (#16a34a)
+        { f: 6.10e14, rgb: [8, 145, 178]  }, // Cyan
+        { f: 6.60e14, rgb: [37, 99, 235]  }, // Blue
+        { f: 7.50e14, rgb: [124, 58, 237] }  // Violet (#7c3aed)
+      ];
+
+      if (freqHz <= stops[0].f) return '#dc2626';
+      if (freqHz >= stops[stops.length - 1].f) return '#7c3aed';
+
+      for (let i = 0; i < stops.length - 1; i++) {
+        const s0 = stops[i];
+        const s1 = stops[i + 1];
+        if (freqHz >= s0.f && freqHz <= s1.f) {
+          const t = (freqHz - s0.f) / (s1.f - s0.f);
+          const r = Math.round(s0.rgb[0] + t * (s1.rgb[0] - s0.rgb[0]));
+          const g = Math.round(s0.rgb[1] + t * (s1.rgb[1] - s0.rgb[1]));
+          const b = Math.round(s0.rgb[2] + t * (s1.rgb[2] - s0.rgb[2]));
+          return `rgb(${r}, ${g}, ${b})`;
+        }
+      }
+      return '#16a34a';
+    }
+
+    /**
+     * Classifies electromagnetic wave strictly by frequency f in Hertz,
+     * including safety details and real-world applications
+     */
+    function classifyEMWave(freqHz) {
+      if (freqHz < 3e9) {
+        return {
+          name: 'Radio Wave',
+          color: '#64748b',
+          badgeText: 'Safe (Non-Ionizing)',
+          badgeClass: 'badge-safe',
+          danger: 'No, radio waves have very low energy and are safe. They pass through the body harmlessly without damaging cells or DNA.',
+          uses: 'Used in FM/AM radio broadcasting, television signals, walkie-talkies, GPS navigation, and wireless remote controls.'
+        };
+      }
+      if (freqHz < 3e11) {
+        return {
+          name: 'Microwave',
+          color: '#d97706',
+          badgeText: 'Safe at Low Levels',
+          badgeClass: 'badge-caution',
+          danger: 'Low-power microwaves (like Wi-Fi) are safe, but high-intensity microwaves can heat water molecules in body tissue and cause internal burns.',
+          uses: 'Used in microwave ovens to heat food, Wi-Fi routers, mobile phone networks, Bluetooth devices, and weather radar systems.'
+        };
+      }
+      if (freqHz < 4e14) {
+        return {
+          name: 'Infrared',
+          color: '#dc2626',
+          badgeText: 'Safe (Heat Energy)',
+          badgeClass: 'badge-safe',
+          danger: 'Generally safe—we feel infrared as warmth. However, intense infrared heat can cause skin burns or eye irritation at close range.',
+          uses: 'Used in TV remote controls, thermal imaging night-vision cameras, heat lamps, electric heaters, and wireless thermometers.'
+        };
+      }
+      if (freqHz <= 7.5e14) {
+        return {
+          name: 'Visible Light',
+          color: getVisibleSpectrumHex(freqHz),
+          badgeText: 'Generally Safe',
+          badgeClass: 'badge-safe',
+          danger: 'No, normal visible light is safe for humans. Only extremely bright concentrated beams (such as high-powered lasers or staring directly at the sun) can harm your eyes.',
+          uses: 'Used for human vision, home and street lighting, photography, phone and TV screens, fiber-optic internet cables, and solar panels.'
+        };
+      }
+      if (freqHz <= 3e16) {
+        return {
+          name: 'Ultraviolet',
+          color: '#7c3aed',
+          badgeText: 'Caution (Can Harm Skin/Eyes)',
+          badgeClass: 'badge-caution',
+          danger: 'Yes, prolonged exposure can damage skin cells, causing sunburns, premature skin aging, eye cataracts, and an increased risk of skin cancer.',
+          uses: 'Used in hospital sterilization tools, detecting counterfeit money, curing dental fillings, blacklights, and helping skin produce Vitamin D in small doses.'
+        };
+      }
+      if (freqHz <= 3e19) {
+        return {
+          name: 'X-Ray',
+          color: '#0284c7',
+          badgeText: 'Dangerous (Ionizing Radiation)',
+          badgeClass: 'badge-danger',
+          danger: 'Yes, X-rays carry high ionizing energy that passes through soft tissue and can damage cell DNA if exposure is frequent or unprotected.',
+          uses: 'Used in medical imaging to check broken bones and teeth, airport security baggage scanners, and inspecting metal welds in engineering.'
+        };
+      }
+      return {
+        name: 'Gamma Ray',
+        color: '#c026d3',
+        badgeText: 'Highly Dangerous (Ionizing)',
+        badgeClass: 'badge-danger',
+        danger: 'Yes, gamma rays are the most energetic and penetrating waves. Unshielded exposure causes severe radiation sickness, cell destruction, and DNA mutations.',
+        uses: 'Used in targeted cancer radiotherapy to destroy tumor cells, sterilizing surgical equipment, nuclear medicine scans, and studying distant stars.'
+      };
+    }
+
+    // =========================================================================
+    // 6. SYNCHRONIZED INPUT & PRESET HANDLERS
+    // =========================================================================
+
+    function clearPresetSelection() {
+      presetRadios.forEach(radio => {
+        radio.checked = false;
+      });
+    }
+
+    /**
+     * Updates state and synchronizes slider + scientific notation boxes
+     */
+    function setFrequencyFromScientific(coeff, exp, syncSlider = true) {
+      let clampedExp = Math.round(Number(exp));
+      if (!Number.isFinite(clampedExp)) clampedExp = 14;
+      clampedExp = Math.max(MIN_EXP, Math.min(MAX_EXP, clampedExp));
+
+      let clampedCoeff = Number(coeff);
+      if (!Number.isFinite(clampedCoeff) || clampedCoeff <= 0) clampedCoeff = 1.00;
+
+      // Normalize if user enters >= 10 or < 1
+      while (clampedCoeff >= 10 && clampedExp < MAX_EXP) {
+        clampedCoeff /= 10;
+        clampedExp += 1;
+      }
+      while (clampedCoeff < 1 && clampedExp > MIN_EXP) {
+        clampedCoeff *= 10;
+        clampedExp -= 1;
+      }
+
+      clampedCoeff = Math.max(1.00, Math.min(9.99, clampedCoeff));
+      if (clampedExp === MAX_EXP && clampedCoeff > 1.00) {
+        // Keep within upper range 10^21 Hz cleanly if adjusted from slider
+        clampedCoeff = Math.min(clampedCoeff, 9.99);
+      }
+
+      currentFreq = clampedCoeff * Math.pow(10, clampedExp);
+
+      freqCoeffInput.value = clampedCoeff.toFixed(2);
+      freqExpInput.value = clampedExp;
+
+      if (syncSlider) {
+        const logVal = Math.log10(currentFreq);
+        freqSlider.value = Math.max(4, Math.min(21, logVal)).toFixed(2);
+      }
+    }
+
+    function setAmplitude(ampValue) {
+      let val = Number(ampValue);
+      if (!Number.isFinite(val)) val = 50;
+      val = Math.max(10, Math.min(150, Math.round(val)));
+      ampSlider.value = val;
+      ampNum.value = val;
+    }
+
+    // Slider -> Scientific Inputs
+    freqSlider.addEventListener('input', () => {
+      clearPresetSelection();
+      const logF = parseFloat(freqSlider.value);
+      const rawFreq = Math.pow(10, logF);
+      const { coeff, exp } = toSciParts(rawFreq);
+      setFrequencyFromScientific(coeff, exp, false);
+    });
+
+    // Scientific Boxes -> Slider
+    function handleSciInputChange() {
+      clearPresetSelection();
+      const coeff = parseFloat(freqCoeffInput.value);
+      const exp = parseInt(freqExpInput.value, 10);
+      if (Number.isFinite(coeff) && Number.isFinite(exp)) {
+        setFrequencyFromScientific(coeff, exp, true);
+      }
+    }
+
+    freqCoeffInput.addEventListener('change', handleSciInputChange);
+    freqCoeffInput.addEventListener('input', () => {
+      const coeff = parseFloat(freqCoeffInput.value);
+      const exp = parseInt(freqExpInput.value, 10);
+      if (Number.isFinite(coeff) && coeff >= 1 && coeff < 10 && Number.isFinite(exp)) {
+        clearPresetSelection();
+        const clampedExp = Math.max(MIN_EXP, Math.min(MAX_EXP, exp));
+        currentFreq = coeff * Math.pow(10, clampedExp);
+        freqSlider.value = Math.max(4, Math.min(21, Math.log10(currentFreq))).toFixed(2);
+      }
+    });
+
+    freqExpInput.addEventListener('change', handleSciInputChange);
+    freqExpInput.addEventListener('input', () => {
+      const coeff = parseFloat(freqCoeffInput.value);
+      const exp = parseInt(freqExpInput.value, 10);
+      if (Number.isFinite(coeff) && Number.isFinite(exp) && exp >= MIN_EXP && exp <= MAX_EXP) {
+        clearPresetSelection();
+        setFrequencyFromScientific(coeff, exp, true);
+      }
+    });
+
+    // Amplitude synchronization
+    ampSlider.addEventListener('input', () => {
+      clearPresetSelection();
+      ampNum.value = ampSlider.value;
+    });
+
+    ampNum.addEventListener('input', () => {
+      clearPresetSelection();
+      const val = parseFloat(ampNum.value);
+      if (Number.isFinite(val)) {
+        ampSlider.value = Math.max(10, Math.min(150, val));
+      }
+    });
+
+    ampNum.addEventListener('change', () => {
+      setAmplitude(ampNum.value);
+    });
+
+    // Automatically activate Custom Color when user picks a swatch
+    customColor.addEventListener('input', () => {
+      useCustomColor.checked = true;
+    });
+
+    // Scientific Presets
+    presetRadios.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        const preset = PRESETS[e.target.value];
+        if (!preset) return;
+        useCustomColor.checked = false;
+        setFrequencyFromScientific(preset.coeff, preset.exp, true);
+        setAmplitude(preset.amp);
+      });
+    });
+
+    // Reset to Default (Visible Light: 5.50 × 10^14 Hz, Amplitude 50)
+    resetBtn.addEventListener('click', () => {
+      setFrequencyFromScientific(5.50, 14, true);
+      setAmplitude(50);
+      pauseWave.checked = false;
+      useCustomColor.checked = false;
+      customColor.value = '#16a34a';
+      document.querySelector('input[name="preset"][value="light"]').checked = true;
+      phase = 0;
+    });
+
+    // =========================================================================
+    // 7. HIGH-DPI CANVAS SETUP & ANIMATION LOOP
+    // =========================================================================
+    const LOGICAL_WIDTH = 600;
+    const LOGICAL_HEIGHT = 300;
+
+    function configureCanvasDPI() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = LOGICAL_WIDTH * dpr;
+      canvas.height = LOGICAL_HEIGHT * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    configureCanvasDPI();
+    window.addEventListener('resize', configureCanvasDPI);
+
+    let lastWaveName = '';
+
+    function animateWave(timestamp) {
+      if (lastTimestamp === null) lastTimestamp = timestamp;
+      const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.05);
+      lastTimestamp = timestamp;
+
+      // Read current amplitude
+      const amplitude = Math.max(10, Math.min(150, parseFloat(ampSlider.value) || 50));
+
+      // Real physics calculations
+      const wavelengthMeters = SPEED_OF_LIGHT / currentFreq;
+      const energyJoules = PLANCK_CONSTANT * currentFreq;
+      const energyEV = energyJoules / ELEMENTARY_CHARGE;
+
+      // Spectrum classification & active color
+      const waveInfo = classifyEMWave(currentFreq);
+      const activeColor = useCustomColor.checked ? customColor.value : waveInfo.color;
+
+      // Update Side Readout Box (#infoBox) & Guide Card border
+      typeDisplay.textContent = waveInfo.name;
+      typeDisplay.style.color = activeColor;
+      infoBox.style.borderColor = activeColor;
+      waveGuideCard.style.borderColor = activeColor;
+
+      // Update Safety & Uses description whenever wave type changes
+      if (waveInfo.name !== lastWaveName) {
+        lastWaveName = waveInfo.name;
+        guideTitle.textContent = `About ${waveInfo.name}s`;
+        dangerBadge.textContent = waveInfo.badgeText;
+        dangerBadge.className = `danger-badge ${waveInfo.badgeClass}`;
+        dangerText.textContent = waveInfo.danger;
+        usesText.textContent = waveInfo.uses;
+      }
+
+      freqDisplay.textContent = formatFrequencySI(currentFreq);
+      freqSciDisplay.innerHTML = formatSciHTML(currentFreq, 'Hz');
+
+      lambdaDisplay.textContent = formatWavelengthSI(wavelengthMeters);
+      lambdaSciDisplay.innerHTML = formatSciHTML(wavelengthMeters, 'm');
+
+      energyDisplay.textContent = formatEnergyEV(energyEV);
+      energySciDisplay.innerHTML = formatSciHTML(energyEV, 'eV');
+
+      // Logarithmic visual scaling across 10^4 Hz .. 10^21 Hz
+      // Maps log10(f) in [4, 21] -> normalized u in [0, 1]
+      const logF = Math.log10(currentFreq);
+      const u = Math.max(0, Math.min(1, (logF - MIN_EXP) / (MAX_EXP - MIN_EXP)));
+
+      // Visual cycles across the 600px canvas: from 1.2 cycles (low radio) to 18 cycles (gamma ray)
+      const cyclesAcrossCanvas = 1.2 + Math.pow(u, 1.35) * 16.8;
+      const k = (2 * Math.PI * cyclesAcrossCanvas) / LOGICAL_WIDTH;
+
+      // Visual angular speed omega (rad/s) scales smoothly with frequency
+      const angularSpeed = 1.6 + u * 7.4;
+
+      const centerY = LOGICAL_HEIGHT / 2;
+      ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+      // Draw subtle horizontal equilibrium axis (y = 0)
+      ctx.save();
+      ctx.beginPath();
+      ctx.setLineDash([6, 6]);
+      ctx.moveTo(0, centerY);
+      ctx.lineTo(LOGICAL_WIDTH, centerY);
+      ctx.strokeStyle = 'rgba(55, 74, 114, 0.28)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
+
+      // Draw equilibrium label
+      ctx.font = '700 11px Nunito, sans-serif';
+      ctx.fillStyle = 'rgba(55, 74, 114, 0.55)';
+      ctx.fillText('y = 0', 10, centerY - 6);
+
+      // Draw clean physics reference caption at top-left
+      ctx.font = '700 12px Nunito, sans-serif';
+      ctx.fillStyle = '#374a72';
+      ctx.fillText('c = 2.998 \u00D7 10\u2078 m/s  |  y(x,t) = A sin(kx \u2212 \u03C9t)', 14, 22);
+
+      // Draw oscillating electromagnetic wave
+      ctx.beginPath();
+      for (let x = 0; x <= LOGICAL_WIDTH; x++) {
+        const waveY = amplitude * Math.sin(k * x - phase);
+        const canvasY = centerY - waveY;
+        if (x === 0) ctx.moveTo(x, canvasY);
+        else ctx.lineTo(x, canvasY);
+      }
+      ctx.strokeStyle = activeColor;
+      ctx.lineWidth = 2.75;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      // Calculate instantaneous displacement at sample point x = 250
+      const sampleX = 250;
+      const sampleY = amplitude * Math.sin(k * sampleX - phase);
+      const dotCanvasY = centerY - sampleY;
+
+      // Subtle vertical guide from equilibrium to sample point
+      ctx.save();
+      ctx.beginPath();
+      ctx.setLineDash([3, 3]);
+      ctx.moveTo(sampleX, centerY);
+      ctx.lineTo(sampleX, dotCanvasY);
+      ctx.strokeStyle = 'rgba(17, 24, 39, 0.35)';
+      ctx.lineWidth = 1.25;
+      ctx.stroke();
+      ctx.restore();
+
+      // Draw tracking dot at x = 250
+      ctx.beginPath();
+      ctx.arc(sampleX, dotCanvasY, 5.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#111827';
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+
+      // Draw live y-value readout next to dot
+      ctx.font = '800 13px Nunito, sans-serif';
+      ctx.fillStyle = '#1e293b';
+      const labelY = Math.max(38, Math.min(LOGICAL_HEIGHT - 10, dotCanvasY + 5));
+      ctx.fillText(`y = ${sampleY.toFixed(1)}`, sampleX + 12, labelY);
+
+      // Advance wave phase unless paused
+      if (!pauseWave.checked) {
+        phase = (phase + angularSpeed * dt) % (Math.PI * 200);
+      }
+
+      requestAnimationFrame(animateWave);
+    }
+
+    // Initialize defaults and start animation on window load
+    window.addEventListener('load', () => {
+      setFrequencyFromScientific(5.50, 14, true);
+      setAmplitude(50);
+      requestAnimationFrame(animateWave);
+    });
+  </script>
+</body>
+</html>
